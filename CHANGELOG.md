@@ -1,5 +1,9 @@
 # Change Log
 
+## v0.11.0
+
+- [workspace] switched `workspace.supportMultiRootWorkspace` to enabled by default [#6089](https://github.com/theia-ide/theia/pull/6089)
+
 ## v0.10.0
 
 - [core] added ability to execute tasks via keybindings [#5913](https://github.com/theia-ide/theia/pull/5913)
