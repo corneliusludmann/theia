@@ -4,6 +4,7 @@
 
 - [cli] enable static compression of build artifacts [#6266](https://github.com/eclipse-theia/theia/pull/6266)
   - to disable pass `--no-static-compression` to `theia build` or `theia watch`.
+- [editor] added breadcrumbs bar
 
 Breaking changes:
 
