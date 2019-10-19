@@ -27,6 +27,7 @@ import PerfectScrollbar from 'perfect-scrollbar';
 import URI from '../../common/uri';
 import { BreadcrumbPopup } from './breadcrumb-popup';
 import { DisposableCollection } from '../../common/disposable';
+import { CorePreferences } from '../core-preferences';
 
 export const BreadcrumbsURI = Symbol('BreadcrumbsURI');
 
@@ -38,6 +39,9 @@ export class BreadcrumbsRenderer extends ReactRenderer {
 
     @inject(BreadcrumbRenderer)
     protected readonly breadcrumbRenderer: BreadcrumbRenderer;
+
+    @inject(CorePreferences)
+    protected readonly corePreferences: CorePreferences;
 
     private breadcrumbs: Breadcrumb[] = [];
 
@@ -54,6 +58,7 @@ export class BreadcrumbsRenderer extends ReactRenderer {
     @postConstruct()
     init(): void {
         this.toDispose.push(this.breadcrumbsService.onBreadcrumbsChange(uri => { if (this.uri.toString() === uri.toString()) { this.refresh(); } }));
+        this.toDispose.push(this.corePreferences.onPreferenceChanged(_ => this.refresh()));
     }
 
     dispose(): void {
@@ -67,7 +72,11 @@ export class BreadcrumbsRenderer extends ReactRenderer {
     }
 
     async refresh(): Promise<void> {
-        this.breadcrumbs = await this.breadcrumbsService.getBreadcrumbs(this.uri);
+        if (this.corePreferences['breadcrumbs.enabled']) {
+            this.breadcrumbs = await this.breadcrumbsService.getBreadcrumbs(this.uri);
+        } else {
+            this.breadcrumbs = [];
+        }
         this.render();
 
         if (!this.scrollbar) {
