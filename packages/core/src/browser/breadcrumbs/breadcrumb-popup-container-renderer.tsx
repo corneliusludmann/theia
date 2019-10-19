@@ -15,34 +15,66 @@
  ********************************************************************************/
 
 import * as React from 'react';
-import { ReactRenderer } from '@theia/core/lib/browser';
+import { ReactRenderer } from '../widgets';
+import { injectable } from 'inversify';
 import { Breadcrumbs } from './breadcrumbs';
 import PerfectScrollbar from 'perfect-scrollbar';
+import { BreadcrumbPopup } from './breadcrumb-popup';
 
-export class BreadcrumbsListPopup extends ReactRenderer {
+export const BreadcrumbPopupContainerRenderer = Symbol('BreadcrumbPopupContainerRenderer');
+export interface BreadcrumbPopupContainerRenderer {
+    /**
+     * Renders the given breadcrumb and attaches it as child to the given parent element at the given anchor position.
+     */
+    render(breadcrumbId: string, anchor: { x: number, y: number }, content: React.ReactNode, parentElement: HTMLElement): BreadcrumbPopup;
+}
+
+@injectable()
+export class DefaultBreadcrumbPopupContainerRenderer implements BreadcrumbPopupContainerRenderer {
+    render(breadcrumbId: string, anchor: { x: number, y: number }, content: React.ReactNode, parentElement: HTMLElement): BreadcrumbPopup {
+        const renderer = new ReactBreadcrumbPopupContainerRenderer(breadcrumbId, anchor, content, parentElement);
+        renderer.render();
+        return renderer;
+    }
+}
+
+class ReactBreadcrumbPopupContainerRenderer extends ReactRenderer implements BreadcrumbPopup {
+
+    isOpen: boolean = false;
 
     protected scrollbar: PerfectScrollbar | undefined;
 
     constructor(
-        protected readonly items: { label: string, title: string, iconClass: string, action: () => void }[],
-        protected readonly anchor: { x: number, y: number },
-        host: HTMLElement
-    ) {
-        super(host);
-    }
+        readonly breadcrumbId: string,
+        readonly anchor: { x: number, y: number },
+        readonly content: React.ReactNode,
+        host: HTMLElement,
+    ) { super(host); }
 
     protected doRender(): React.ReactNode {
         return <div className={Breadcrumbs.Styles.BREADCRUMB_POPUP}
             style={{ left: `${this.anchor.x}px`, top: `${this.anchor.y}px` }}
-            onBlur={_ => this.dispose()}
+            onBlur={this.onBlur}
             tabIndex={0}
         >
-            <ul>
-                {this.items.map((item, index) => <li key={index} title={item.title} onClick={_ => item.action()}>
-                    <span className={item.iconClass}></span> <span>{item.label}</span>
-                </li>)}
-            </ul>
+            {this.content}
         </div >;
+    }
+
+    protected onBlur = (event: React.FocusEvent) => {
+        if (event.relatedTarget && event.relatedTarget instanceof HTMLElement) {
+            // event.relatedTarget is the element that has the focus after this popup looses the focus.
+            // If a breadcrumb was clicked the following holds the breadcrumb ID of the clicked breadcrumb.
+            const breadcrumbId = event.relatedTarget.getAttribute('data-breadcrumb-id');
+            if (breadcrumbId && breadcrumbId === this.breadcrumbId) {
+                // This is a click on the breadcrumb that has openend this popup.
+                // We do not close this popup here but let the click event of the breadcrumb handle this instead
+                // because it needs to know that this popup is open to decide if it just closes this popup or
+                // also open a new popup.
+                return;
+            }
+        }
+        this.dispose();
     }
 
     render(): void {
@@ -61,6 +93,7 @@ export class BreadcrumbsListPopup extends ReactRenderer {
         }
         this.focus();
         document.addEventListener('keyup', this.escFunction);
+        this.isOpen = true;
     }
 
     focus(): boolean {
@@ -78,6 +111,7 @@ export class BreadcrumbsListPopup extends ReactRenderer {
             this.scrollbar = undefined;
         }
         document.removeEventListener('keyup', this.escFunction);
+        this.isOpen = false;
     }
 
     protected escFunction = (event: KeyboardEvent) => {

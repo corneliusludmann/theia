@@ -33,8 +33,14 @@ import { NavigationLocationSimilarity } from './navigation/navigation-location-s
 import { EditorVariableContribution } from './editor-variable-contribution';
 import { SemanticHighlightingService } from './semantic-highlight/semantic-highlighting-service';
 import { EditorQuickOpenService } from './editor-quick-open-service';
-import { TextEditor } from './editor';
-import { BreadcrumbsRenderer, BreadcrumbsRendererFactory } from './breadcrumbs/breadcrumbs-renderer';
+import URI from '@theia/core/lib/common/uri';
+import {
+    BreadcrumbsRendererFactory,
+    BreadcrumbsRenderer,
+    BreadcrumbsURI,
+    BreadcrumbRenderer,
+    DefaultBreadcrumbRenderer
+} from '@theia/core/lib/browser/breadcrumbs';
 
 export default new ContainerModule(bind => {
     bindEditorPreferences(bind);
@@ -78,10 +84,11 @@ export default new ContainerModule(bind => {
     bind(EditorAccess).to(ActiveEditorAccess).inSingletonScope().whenTargetNamed(EditorAccess.ACTIVE);
 
     bind(BreadcrumbsRendererFactory).toFactory(ctx =>
-        (editor: TextEditor) => {
+        (uri: URI) => {
             const childContainer = ctx.container.createChild();
-            childContainer.bind('TextEditor').toConstantValue(editor);
+            childContainer.bind(BreadcrumbsURI).toConstantValue(uri);
             childContainer.bind(BreadcrumbsRenderer).toSelf();
+            childContainer.bind(BreadcrumbRenderer).to(DefaultBreadcrumbRenderer).inSingletonScope();
             return childContainer.get(BreadcrumbsRenderer);
         }
     );

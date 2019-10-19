@@ -30,6 +30,8 @@ import { FileSystemWatcher } from './filesystem-watcher';
 import { FileSystemFrontendContribution } from './filesystem-frontend-contribution';
 import { FileSystemProxyFactory } from './filesystem-proxy-factory';
 import { FileUploadService } from './file-upload-service';
+import { FilepathBreadcrumbsContribution } from './breadcrumbs/filepath-breadcrumbs-contribution';
+import { BreadcrumbsContribution } from '@theia/core/lib/browser/breadcrumbs/breadcrumbs-contribution';
 
 export default new ContainerModule(bind => {
     bindFileSystemPreferences(bind);
@@ -62,6 +64,9 @@ export default new ContainerModule(bind => {
     bind(FileSystemFrontendContribution).toSelf().inSingletonScope();
     bind(CommandContribution).toService(FileSystemFrontendContribution);
     bind(FrontendApplicationContribution).toService(FileSystemFrontendContribution);
+
+    bind(FilepathBreadcrumbsContribution).toSelf().inSingletonScope();
+    bind(BreadcrumbsContribution).toService(FilepathBreadcrumbsContribution);
 });
 
 export function bindFileResource(bind: interfaces.Bind): void {

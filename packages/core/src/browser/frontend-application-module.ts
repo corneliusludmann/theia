@@ -83,6 +83,12 @@ import { ProgressStatusBarItem } from './progress-status-bar-item';
 import { TabBarDecoratorService, TabBarDecorator } from './shell/tab-bar-decorator';
 import { ContextMenuContext } from './menu/context-menu-context';
 import { bindResourceProvider, bindMessageService, bindPreferenceService } from './frontend-application-bindings';
+import {
+    BreadcrumbsContribution,
+    BreadcrumbsService,
+    BreadcrumbPopupContainerRenderer,
+    DefaultBreadcrumbPopupContainerRenderer
+} from './breadcrumbs';
 
 export { bindResourceProvider, bindMessageService, bindPreferenceService };
 
@@ -286,4 +292,8 @@ export const frontendApplicationModule = new ContainerModule((bind, unbind, isBo
     bind(ProgressService).toSelf().inSingletonScope();
 
     bind(ContextMenuContext).toSelf().inSingletonScope();
+
+    bindContributionProvider(bind, BreadcrumbsContribution);
+    bind(BreadcrumbsService).toSelf().inSingletonScope();
+    bind(BreadcrumbPopupContainerRenderer).to(DefaultBreadcrumbPopupContainerRenderer).inSingletonScope();
 });

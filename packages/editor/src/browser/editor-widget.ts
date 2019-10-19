@@ -18,7 +18,7 @@ import { Disposable, SelectionService } from '@theia/core/lib/common';
 import { Widget, BaseWidget, Message, Saveable, SaveableSource, Navigatable, StatefulWidget } from '@theia/core/lib/browser';
 import URI from '@theia/core/lib/common/uri';
 import { TextEditor } from './editor';
-import { BreadcrumbsRenderer } from './breadcrumbs/breadcrumbs-renderer';
+import { BreadcrumbsRenderer } from '@theia/core/lib/browser/breadcrumbs';
 
 export class EditorWidget extends BaseWidget implements SaveableSource, Navigatable, StatefulWidget {
 
@@ -80,11 +80,6 @@ export class EditorWidget extends BaseWidget implements SaveableSource, Navigata
         super.onAfterShow(msg);
         this.editor.refresh();
         this.breadcrumbsRenderer.refresh();
-    }
-
-    protected onAfterHide(msg: Message): void {
-        super.onAfterHide(msg);
-        this.breadcrumbsRenderer.onAfterHide();
     }
 
     protected onResize(msg: Widget.ResizeMessage): void {
